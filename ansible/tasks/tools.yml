@@ -3,6 +3,7 @@
   community.general.macports:
     name:
       - git
+      - git-credential-manager
       - jq
       - wget
       - terraform-1.14
@@ -10,6 +11,11 @@
       - helm-3.22
     state: present
   become: true
+
+- name: Configure Git Credential Manager
+  ansible.builtin.command:
+    cmd: git-credential-manager configure
+  changed_when: false
 
 # Versioned MacPorts packages need an explicit default CLI selection.
 - name: Check selected CLI versions
