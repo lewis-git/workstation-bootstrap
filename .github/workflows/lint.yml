@@ -1,0 +1,17 @@
+name: Lint
+
+on: push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: ShellCheck
+        run: shellcheck bootstrap.sh
+
+      - name: ansible-lint
+        run: |
+          pipx install ansible-lint
+          ansible-lint ansible/
