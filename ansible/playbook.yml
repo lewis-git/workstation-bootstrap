@@ -2,7 +2,7 @@
 - name: Configure DevOps workstation
   hosts: localhost
   connection: local
-  gather_facts: true
+  gather_facts: false
 
   vars:
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
@@ -11,12 +11,9 @@
     - vars.yml
 
   tasks:
-    - name: Check macOS version
-      ansible.builtin.assert:
-        that:
-          - ansible_facts['system'] == 'Darwin'
-          - ansible_facts['distribution_major_version'] | int >= 12
-        fail_msg: "Requires macOS 12 or newer."
-
     - name: Install and verify tools
-      ansible.builtin.import_tasks: tasks/tools.yml
+      ansible.builtin.include_tasks: tasks/install.yml
+      loop: "{{ tools }}"
+      loop_control:
+        loop_var: tool
+        label: "{{ tool.name }}"

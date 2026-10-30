@@ -1,7 +1,0 @@
----
-- name: Set up developer tools
-  ansible.builtin.include_tasks: install.yml
-  loop: "{{ tools }}"
-  loop_control:
-    loop_var: tool
-    label: "{{ tool.name }}"
