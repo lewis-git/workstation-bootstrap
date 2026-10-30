@@ -2,7 +2,7 @@
 name: ansible-lint
 on:
   pull_request:
-    branches: ["main", "stable"]
+    branches: ["main"]
 jobs:
   build:
     name: Ansible Lint # Naming the build is important to use it as a status check
@@ -18,4 +18,4 @@ jobs:
           setup_python: "true"
           python_version: "3.14"
           working_directory: ""
-          requirements_file: "ansible/requirements.yml"
+          requirements_file: ""
