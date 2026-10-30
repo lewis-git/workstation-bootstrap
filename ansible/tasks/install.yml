@@ -1,0 +1,34 @@
+---
+- name: Check {{ tool.name }}
+  ansible.builtin.command:
+    argv: "{{ tool.check }}"
+  register: tool_check
+  changed_when: false
+  failed_when: false
+
+- name: Install {{ tool.name }} if needed
+  ansible.builtin.command:
+    argv:
+      - /opt/local/bin/port
+      - install
+      - "{{ tool.name }}"
+  become: true
+  when: tool_check.rc != 0
+
+- name: Verify {{ tool.name }}
+  ansible.builtin.command:
+    argv: "{{ tool.check }}"
+  register: verification
+  changed_when: false
+  failed_when: false
+
+- name: Report verification failure
+  ansible.builtin.fail:
+    msg: >-
+      {{ tool.name }} is not working after installation.
+      Check MacPorts compatibility, PATH and any required
+      version selection: port select --summary
+      Command: {{ tool.check | join(' ') }}
+      Exit code: {{ verification.rc }}
+      Output: {{ verification.stderr | default('') }}
+  when: verification.rc != 0

@@ -14,6 +14,7 @@ Uses MacPorts for package management and Ansible to install and configure the to
 Clone the repo and run:
 
 ```bash
+cd workstation-bootstrap
 ./bootstrap.sh
 ```
 

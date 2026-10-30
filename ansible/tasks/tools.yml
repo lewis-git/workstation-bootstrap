@@ -1,36 +1,7 @@
 ---
-- name: Install developer CLIs with MacPorts
-  community.general.macports:
-    name:
-      - git
-      - git-credential-manager
-      - jq
-      - wget
-      - terraform-1.14
-      - kubectl-1.34
-      - helm-3.22
-    state: present
-  become: true
-
-- name: Configure Git Credential Manager
-  ansible.builtin.command:
-    cmd: git-credential-manager configure
-  changed_when: false
-
-# Versioned MacPorts packages need an explicit default CLI selection.
-- name: Check selected CLI versions
-  ansible.builtin.command: "port select --show {{ item.group }}"
-  loop:
-    - { group: terraform, version: terraform1.14 }
-    - { group: kubectl, version: kubectl1.34 }
-    - { group: helm, version: helm3.22 }
-  register: selections
-  changed_when: false
-
-- name: Select default CLI versions where needed
-  ansible.builtin.command: "port select --set {{ item.item.group }} {{ item.item.version }}"
-  loop: "{{ selections.results }}"
+- name: Set up developer tools
+  ansible.builtin.include_tasks: install.yml
+  loop: "{{ tools }}"
   loop_control:
-    label: "{{ item.item.group }}"
-  when: item.item.version not in item.stdout
-  become: true
+    loop_var: tool
+    label: "{{ tool.name }}"

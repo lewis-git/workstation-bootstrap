@@ -1,0 +1,28 @@
+---
+# Tools to install if not already working.
+# Comment out tools you don't need.
+
+tools:
+  - name: git
+    check: [git, --version]
+
+  - name: git-credential-manager
+    check: [git-credential-manager, --version]
+
+  - name: jq
+    check: [jq, --version]
+
+  - name: wget
+    check: [wget, --version]
+
+  - name: terraform
+    check: [terraform, version]
+
+  - name: kubectl
+    check: [kubectl, version, --client]
+
+  - name: helm
+    check: [helm, version, --short]
+
+  - name: openjdk21
+    check: [java, -version]
