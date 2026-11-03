@@ -1,36 +1,27 @@
-# DevOps Workstation Bootstrap
-
-A simple Bash and Ansible setup for installing common DevOps and Platform Engineering tools on macOS.
-
-Uses MacPorts for package management and Ansible to install and configure the tooling. Currently supports macOS 12+ (Intel and Apple Silicon).
-
-## Prerequisites
-
-- Apple Command Line Tools (`xcode-select --install`)
-- [MacPorts](https://www.macports.org/install.php)
-
 ## Usage
-
-Clone the repo and run:
 
 ```bash
 cd workstation-bootstrap
 ./bootstrap.sh
 ```
 
-The script sets up Python and Ansible in a local virtual environment, installs the required Ansible collections, and runs the playbook.
+Any extra arguments are passed to `ansible-playbook`, e.g. `./bootstrap.sh --check` for a dry run.
 
-## Tools
+## How it works
 
-- Git
-- Terraform
-- kubectl
-- Helm
-- jq
-- wget
+Each tool is checked by running a command. Tools that already work are left
+alone, however they were installed, and anything missing is installed with
+MacPorts and verified.
 
-## Notes
+## Adding a tool
 
-- Safe to rerun; Ansible handles already-installed packages.
-- Tool installation and verification are managed under `ansible/`.
-- Currently macOS only, with support for other operating systems planned.
+Add an entry to `ansible/vars.yml`:
+
+```yaml
+  - name: git         # MacPorts port name
+    check: [git, --version] # command that proves it works
+```
+
+## Why MacPorts?
+
+This was built on macOS 12, which Homebrew no longer supports.

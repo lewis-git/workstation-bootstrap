@@ -11,7 +11,7 @@
     - vars.yml
 
   tasks:
-    - name: Install and verify tools
+    - name: Install and verify tools with MacPorts
       ansible.builtin.include_tasks: tasks/install.yml
       loop: "{{ tools }}"
       loop_control:

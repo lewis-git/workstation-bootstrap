@@ -1,8 +1,10 @@
 ---
-# Tools to install if not already working.
 # Comment out tools you don't need.
 
 tools:
+  - name: awscli2
+    check: [aws, --version]
+
   - name: git
     check: [git, --version]
 

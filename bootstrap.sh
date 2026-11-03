@@ -1,73 +1,39 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Resolve repository directory
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV="$ROOT/.venv"
+PYTHON=/opt/local/bin/python3.12
+
+# MacPorts lives in /opt/local, which a fresh shell won't have on PATH
 export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
-# Check operating system
-if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo "This bootstrap currently supports macOS only." >&2
-  exit 1
-fi
+die() { echo "Error: $*" >&2; exit 1; }
+
+[[ "$(uname -s)" == Darwin ]] || die "Only macOS is supported for now."
 
 MACOS_MAJOR="$(sw_vers -productVersion | cut -d. -f1)"
+(( MACOS_MAJOR >= 12 )) || die "Requires macOS 12 or newer."
 
-if (( MACOS_MAJOR < 12 )); then
-  echo "Requires macOS 12 or newer." >&2
-  exit 1
+# MacPorts depends on the Command Line Tools, so check those first
+xcode-select -p >/dev/null 2>&1 || die "Run: xcode-select --install"
+[[ -x /opt/local/bin/port ]] || die "Install MacPorts: https://www.macports.org/install.php"
+
+if [[ ! -x "$PYTHON" ]]; then
+  echo "Installing Python 3.12..."
+  sudo port install python312
 fi
 
-# Check MacPorts
-if [[ ! -x /opt/local/bin/port ]]; then
-  echo "MacPorts is required."
-  echo "Install it from https://www.macports.org/install.php"
-  exit 1
-fi
+# Keep Ansible in a local venv so it never touches system Python
+[[ -x "$VENV/bin/python" ]] || "$PYTHON" -m venv "$VENV"
 
-# Check Apple Command Line Tools
-if ! xcode-select -p >/dev/null 2>&1; then
-  echo "Apple Command Line Tools are required."
-  echo "Run: xcode-select --install"
-  exit 1
-fi
-
-# Install Python
-echo "Installing Python 3.12..."
-sudo /opt/local/bin/port install python312 py312-pip
-
-PYTHON="/opt/local/bin/python3.12"
-VENV="$ROOT/.venv"
-
-# Create isolated Python environment
-if [[ ! -x "$VENV/bin/python" ]]; then
-  echo "Creating Python virtual environment..."
-  "$PYTHON" -m venv "$VENV"
-fi
-
-# Install Ansible and trusted CA certificates
-echo "Installing Ansible and certifi..."
-"$VENV/bin/python" -m pip install \
-  --disable-pip-version-check \
-  'ansible-core>=2.21,<2.22' \
-  certifi
-
-# Configure SSL certificate verification
-export SSL_CERT_FILE="$("$VENV/bin/python" -m certifi)"
-
-# Install Ansible collections
-echo "Installing Ansible collections..."
-"$VENV/bin/ansible-galaxy" collection install \
-  -r "$ROOT/ansible/requirements.yml"
-
-# Run local workstation configuration
-echo "Running Ansible playbook..."
-export ANSIBLE_CONFIG="$ROOT/ansible/ansible.cfg"
+echo "Installing Ansible..."
+"$VENV/bin/pip" install --quiet --disable-pip-version-check 'ansible-core>=2.21,<2.22'
 
 "$VENV/bin/ansible-playbook" \
-  -i 'localhost,' \
+  -i localhost, \
   "$ROOT/ansible/playbook.yml" \
   --ask-become-pass \
   "$@"
 
-echo "Bootstrap completed successfully."
+echo "Bootstrap complete."
